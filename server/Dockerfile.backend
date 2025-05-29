@@ -1,0 +1,37 @@
+# ---------------------
+# Stage 1: Build stage
+# ---------------------
+    FROM node:18-alpine AS builder
+
+    # Set working directory
+    WORKDIR /app
+    
+    # Copy package files and install dependencies
+    COPY package*.json ./
+    RUN npm install
+    
+    # Copy source code
+    COPY . .
+    
+    # If using TypeScript, build the project
+    # RUN npm run build
+    
+    # ------------------------
+    # Stage 2: Production image
+    # ------------------------
+    FROM node:18-alpine
+    
+    WORKDIR /app
+    
+    # Copy only production dependencies
+    COPY --from=builder /app/node_modules ./node_modules
+    
+    # Copy only the built app (or full app if JS)
+    COPY --from=builder /app .
+    
+    # Expose the port (adjust as needed)
+    EXPOSE 3000
+    
+    # Start the server
+    CMD ["node", "server.js"]
+    
